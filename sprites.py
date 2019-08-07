@@ -11,7 +11,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, game, acceleration, active, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.has_ball = None
-        self.image = pygame.Surface((30,40))
+        # Shape is not quite square
+        self.image = pygame.Surface((26,72))
         self.image.fill(YELLOW)
         self.game = game
         self.speed = acceleration

@@ -34,7 +34,7 @@ class Game:
         self.player2_team = pg.sprite.Group()
         self.player1 = Player(self, PLAYER_ACC_FAST, True, WIDTH / 2 - 50, HEIGHT - 100)
         self.player2 = Player(self, PLAYER_ACC_MED, False, WIDTH / 2 + 50, HEIGHT - 100)
-        self.ball =  Ball(*self.player1.position,10,10)
+        self.ball =  Ball(*self.player1.position,8,8)
         self.ball.player = self.player1
         self.active_player = self.player1
         self.all_sprites.add(self.player1)
