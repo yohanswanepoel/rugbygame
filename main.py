@@ -5,6 +5,12 @@ import os
 from settings import *
 from sprites import *
 
+# @TODO
+# Players follow ball - line up in positions
+# Active player should be able to stop
+# Ball is center of Y on screen
+# Pass in tackle (back, left, right)
+# Pass back in stead of kick
 
 class Game:
     def __init__(self):
