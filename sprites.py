@@ -43,10 +43,13 @@ class Player(pygame.sprite.Sprite):
                     self.kick_ball(1)
             if keys[pygame.K_RIGHT] and keys[pygame.K_SPACE]:
                 if self.game.ball.player == self:
-                    self.pass_ball(1, 3)
+                    self.pass_ball(1, 2)
             if keys[pygame.K_LEFT] and keys[pygame.K_SPACE]:
                 if self.game.ball.player == self:
-                    self.pass_ball(-1, 3)
+                    self.pass_ball(-1, 2)
+            if keys[pygame.K_SPACE]:
+                if self.game.ball.player == self:
+                    self.kick_ball(-1)
 
 
         # Adjust the acceleration by friction
@@ -56,22 +59,24 @@ class Player(pygame.sprite.Sprite):
         # Standard equations for motion
         self.velocity += self.acceleration
         self.position += self.velocity + PLAYER_ACC * self.acceleration
-        # Do not exit the screen
-        if self.position.x > WIDTH:
-            self.position.x = 0
-        elif self.position.x < 0:
-            self.position.x = WIDTH
+
         # Set new position
         self.rect.center = self.position
 
     def pass_ball(self, left_right, fwd_back):
         self.game.ball.player = None
+        self.game.active_player = None
+        self.game.ball.rect.x += left_right * self.rect.width / 2
+        self.game.ball.position.x += left_right * self.rect.width / 2
         self.game.ball.velocity.x = left_right * PASS_STRONG
         self.game.ball.velocity.y = fwd_back
 
     def kick_ball(self, fwd_back):
         self.game.ball.player = None
+        self.game.active_player = None
         self.game.ball.vel_height = 30
+        self.game.ball.rect.y += fwd_back * (self.rect.height / 2) + 5
+        self.game.ball.position.y += fwd_back * (self.rect.height / 2) + 5
         self.game.ball.velocity.x = self.velocity.x * 5
         self.game.ball.velocity.y = fwd_back * KICK_STRONG
 
@@ -93,13 +98,15 @@ class Ball(pygame.sprite.Sprite):
         self.position = vec(x, y)
         self.velocity = vec(0, 0)
 
-
-
     def update(self):
         if self.player:
-            self.rect.center = self.player.position
+            self.velocity.x = self.player.velocity.x
+            self.velocity.y = self.player.velocity.y
+            self.rect.center = self.player.rect.center
+            self.position.x = self.player.position.x
+            self.position.y = self.player.position.y
         else:
-            self.position = self.rect.center
+            # self.position = self.rect.center
             # Adjust the acceleration by friction
             # The faster you go the more friction applies
             # Standard equations for motion
@@ -110,14 +117,21 @@ class Ball(pygame.sprite.Sprite):
                 self.height += self.vel_height
                 print(self.height)
             self.velocity += (self.velocity * BALL_AIR_FRICTION)
-            self.position += self.velocity
-            # Do not exit the screen
-            if self.height < 0:
-                self.height = 0
-            if self.position.x > WIDTH:
-                self.position.x = 0
-            elif self.position.x < 0:
-                self.position.x = WIDTH
-            # Set new position
-            self.rect.center = self.position
 
+        self.position += self.velocity
+        self.rect.center = self.position
+
+
+class Field(pygame.sprite.Sprite):
+
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        # Draw Boundary
+        self.image = pygame.Surface((BOUND_RIGHT, BOUND_BOTTOM))
+        self.rect = self.image.get_rect()
+        # should not be center
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.image.fill(BLUE)
+        self.position = self.rect.center
+        self.velocity = pygame.math.Vector2(0, 0)
+        # Draw playing surface
