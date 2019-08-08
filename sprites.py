@@ -89,7 +89,7 @@ class Ball(pygame.sprite.Sprite):
         self.vel_height = 0
         self.acc_height = 0
         self.image = pygame.Surface((width, height))
-        self.image.fill(GREEN)
+        self.image.fill(GREY)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -129,10 +129,19 @@ class Field(pygame.sprite.Sprite):
         # Draw Boundary
         self.image = pygame.Surface((BOUND_RIGHT, BOUND_BOTTOM))
         self.rect = self.image.get_rect()
+        self.image.fill(BLUE)
+        pygame.draw.rect(self.image, GRASS, [125, 125, TOUCH_WIDTH, DEAD_HEIGHT])
+        pygame.draw.rect(self.image, WHITE, [125, 125, TOUCH_WIDTH, DEAD_HEIGHT], 4)
+        # Middle Line
+        pygame.draw.line(self.image, WHITE, [125, BOUND_BOTTOM / 2], [125 + TOUCH_WIDTH, BOUND_BOTTOM / 2], 3)
+        # Touch Lines
+        pygame.draw.line(self.image, WHITE, [125, TRY_TOP], [125 + TOUCH_WIDTH, TRY_TOP], 3)
+        pygame.draw.line(self.image, WHITE, [125, TRY_BOTTOM], [125 + TOUCH_WIDTH, TRY_BOTTOM], 3)
+        # 25 M Lines Lines
+        # 10 M Lines
         self.game = game
         # self.draw_field()
         # should not be center
         self.rect.center = (BOUND_RIGHT / 2, BOUND_BOTTOM / 2)
-        self.image.fill(BLUE)
         self.position = self.rect.center
         self.velocity = pygame.math.Vector2(0, 0)
