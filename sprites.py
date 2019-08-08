@@ -124,14 +124,15 @@ class Ball(pygame.sprite.Sprite):
 
 class Field(pygame.sprite.Sprite):
 
-    def __init__(self):
+    def __init__(self, game):
         pygame.sprite.Sprite.__init__(self)
         # Draw Boundary
         self.image = pygame.Surface((BOUND_RIGHT, BOUND_BOTTOM))
         self.rect = self.image.get_rect()
+        self.game = game
+        # self.draw_field()
         # should not be center
-        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.rect.center = (BOUND_RIGHT / 2, BOUND_BOTTOM / 2)
         self.image.fill(BLUE)
         self.position = self.rect.center
         self.velocity = pygame.math.Vector2(0, 0)
-        # Draw playing surface

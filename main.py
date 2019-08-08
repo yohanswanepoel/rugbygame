@@ -4,6 +4,7 @@ import random
 import os
 from settings import *
 from sprites import *
+from camera import *
 
 # @TODO
 # Players follow ball - line up in positions
@@ -35,11 +36,11 @@ class Game:
         self.player1_team = pg.sprite.Group()
         self.player2_team = pg.sprite.Group()
         self.all_actors = pg.sprite.Group()
-        self.field = Field()
-        self.center = pg.math.Vector2(WIDTH / 2, HEIGHT / 2)
-        self.camera = pg.math.Vector2(0, 0)
-        self.player1 = Player(self, PLAYER_ACC_FAST, True, WIDTH / 2, HEIGHT / 2)
-        self.player2 = Player(self, PLAYER_ACC_MED, False, WIDTH / 2 + 50, HEIGHT / 2)
+        self.camera = Camera(BOUND_RIGHT, BOUND_BOTTOM)
+        self.field = Field(self)
+        self.center = pg.math.Vector2(BOUND_RIGHT / 2, BOUND_BOTTOM / 2)
+        self.player1 = Player(self, PLAYER_ACC_FAST, True, BOUND_RIGHT / 2, BOUND_BOTTOM / 2)
+        self.player2 = Player(self, PLAYER_ACC_MED, False, BOUND_RIGHT / 2 + 50, BOUND_BOTTOM / 2)
         self.ball = Ball(*self.player1.position,8,8)
         self.ball.player = self.player1
         self.active_player = self.player1
@@ -60,8 +61,6 @@ class Game:
         self.playing = True
         while self.playing:
             self.clock.tick(FPS)
-            print(self.ball.rect.center)
-            print(self.ball.velocity.y)
             self.event()
             self.update()
             self.draw()
@@ -69,6 +68,7 @@ class Game:
     def update(self):
         # Game loop update
         self.all_sprites.update()
+        self.camera.update(self.ball)
         # Check if passing/flying ball hits player
         if not self.ball.player:
             # Only do detection if ball is on the ground
@@ -90,24 +90,6 @@ class Game:
                 # set others inactive (there must be a better way)
                 self.active_player = nearest_player
 
-        # Follow the ball
-        delta_x = 0
-        delta_y = 0
-
-        if self.ball.rect.centerx != (WIDTH / 2):
-            delta_x = self.ball.rect.centerx - (WIDTH / 2)
-
-        # Follow the ball Doing my head in
-        if self.ball.rect.centery > (HEIGHT / 2):
-            self.ball.position.y -= abs(self.ball.velocity.y)
-            for p in self.all_actors:
-                p.rect.y -= abs(self.ball.velocity.y)
-
-        if self.ball.rect.centery < (HEIGHT / 2):
-            self.ball.position.y += abs(self.ball.velocity.y)
-            for p in self.all_actors:
-                p.rect.y += abs(self.ball.velocity.y)
-
     def event(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -124,7 +106,9 @@ class Game:
         # Game loop draw
         # Render Draw
         self.screen.fill(BLACK)
-        self.all_sprites.draw(self.screen)
+        for sprite in self.all_sprites:
+            self.screen.blit(sprite.image, self.camera.apply(sprite))
+
         # After the drawing flip the screen to display
         pg.display.flip()
     
