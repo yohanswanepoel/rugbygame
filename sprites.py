@@ -66,6 +66,7 @@ class Player(pygame.sprite.Sprite):
     def pass_ball(self, left_right, fwd_back):
         self.game.ball.player = None
         self.game.active_player = None
+        self.game.ball.vel_height = 50  # This is a strong pass
         self.game.ball.rect.x += left_right * self.rect.width / 2
         self.game.ball.position.x += left_right * self.rect.width / 2
         self.game.ball.velocity.x = left_right * PASS_STRONG
@@ -74,7 +75,7 @@ class Player(pygame.sprite.Sprite):
     def kick_ball(self, fwd_back):
         self.game.ball.player = None
         self.game.active_player = None
-        self.game.ball.vel_height = 30
+        self.game.ball.vel_height = 250
         self.game.ball.rect.y += fwd_back * (self.rect.height / 2) + 5
         self.game.ball.position.y += fwd_back * (self.rect.height / 2) + 5
         self.game.ball.velocity.x = self.velocity.x * 5
@@ -116,7 +117,14 @@ class Ball(pygame.sprite.Sprite):
                 self.vel_height += self.acc_height
                 self.height += self.vel_height
                 print(self.height)
-            self.velocity += (self.velocity * BALL_AIR_FRICTION)
+                self.velocity += (self.velocity * BALL_AIR_FRICTION)
+            else:
+                self.velocity += (self.velocity * BALL_GROUND_FRICTION)
+
+        if self.vel_height > 3:
+            self.image.fill(RED)
+        else:
+            self.image.fill(GREY)
 
         self.position += self.velocity
         self.rect.center = self.position

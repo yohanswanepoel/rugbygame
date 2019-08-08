@@ -73,7 +73,7 @@ class Game:
         if not self.ball.player:
             # Only do detection if ball is on the ground
             hits = None
-            if self.ball.height <= 2:
+            if self.ball.height <= 80:
                 hits = pg.sprite.spritecollide(self.ball, self.player1_team, False)
                 # Catch/pickup the ball
                 if hits:
