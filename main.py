@@ -5,6 +5,7 @@ import os
 from settings import *
 from sprites import *
 from camera import *
+from rules import *
 
 # @TODO
 # Players follow ball - line up in positions
@@ -29,6 +30,7 @@ class Game:
         self.player = None
         self.playing = False
         self.active_player = None
+        self.rules = Rules(self)
 
     def new(self):
         # Start a new game
@@ -90,6 +92,15 @@ class Game:
                 # set others inactive (there must be a better way)
                 self.active_player = nearest_player
 
+        if self.rules.check_ball_in_touch():
+            self.rules.state = State.LINEOUT
+            self.player2.position.x = self.ball.rect.centerx
+            self.player2.position.y = self.ball.rect.centery
+            self.player2.rect.centerx = self.ball.rect.centerx
+            self.player2.rect.centery = self.ball.rect.centery
+            self.ball.player = self.player2
+            self.active_player = self.player2
+
     def event(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -100,7 +111,15 @@ class Game:
                 # This should pick nearest player to the ball
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_b]:
-                    self.active_player = self.player1
+                    self.active_player = self.player
+                if keys[pygame.K_SPACE] and self.rules.state == State.LINEOUT:
+                    #Throw the ball in
+                    if self.ball.rect.centerx <= TOUCH_LEFT:
+                        self.player2.pass_ball(1, 0)
+                    if self.ball.rect.centerx >= TOUCH_RIGHT:
+                        self.player2.pass_ball(-1, 0)
+                    self.rules.state = State.INPLAY
+
 
     def draw(self):
         # Game loop draw
@@ -117,6 +136,7 @@ class Game:
     
     def show_game_over_screen(self):
         pass
+
 
 g = Game()
 g.show_start_screen()

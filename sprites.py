@@ -1,6 +1,7 @@
 # Sprite classes for platform game
 import pygame
 from settings import *
+from rules import *
 
 vec = pygame.math.Vector2
 
@@ -25,7 +26,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.acceleration = vec(0, 0)
-        if self.game.active_player == self:
+        if self.game.active_player == self and self.game.rules.state == State.INPLAY:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LEFT]:
                 self.acceleration.x -= self.speed
@@ -106,6 +107,7 @@ class Ball(pygame.sprite.Sprite):
             self.rect.center = self.player.rect.center
             self.position.x = self.player.position.x
             self.position.y = self.player.position.y
+            self.height = 0
         else:
             # self.position = self.rect.center
             # Adjust the acceleration by friction
@@ -116,12 +118,12 @@ class Ball(pygame.sprite.Sprite):
                 self.acc_height += self.vel_height * BALL_AIR_FRICTION
                 self.vel_height += self.acc_height
                 self.height += self.vel_height
-                print(self.height)
                 self.velocity += (self.velocity * BALL_AIR_FRICTION)
             else:
                 self.velocity += (self.velocity * BALL_GROUND_FRICTION)
 
-        if self.vel_height > 3:
+        # Draw different for now - until figure out how to show flight
+        if self.height > 3:
             self.image.fill(RED)
         else:
             self.image.fill(GREY)
