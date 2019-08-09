@@ -3,10 +3,11 @@ import pygame as pg
 import random
 import os
 from settings import *
-from sprites import *
+from player import *
 from camera import *
 from rules import *
 from field import *
+from ball import *
 
 # @TODO
 # Players follow ball - line up in positions
