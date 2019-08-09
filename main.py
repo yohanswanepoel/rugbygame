@@ -6,6 +6,7 @@ from settings import *
 from sprites import *
 from camera import *
 from rules import *
+from field import *
 
 # @TODO
 # Players follow ball - line up in positions
@@ -41,8 +42,8 @@ class Game:
         self.camera = Camera(BOUND_RIGHT, BOUND_BOTTOM)
         self.field = Field(self)
         self.center = pg.math.Vector2(BOUND_RIGHT / 2, BOUND_BOTTOM / 2)
-        self.player1 = Player(self, PLAYER_ACC_FAST, True, BOUND_RIGHT / 2, BOUND_BOTTOM / 2)
-        self.player2 = Player(self, PLAYER_ACC_MED, False, BOUND_RIGHT / 2 + 50, BOUND_BOTTOM / 2)
+        self.player1 = Player(self, PLAYER_ACC_FAST, True, BOUND_RIGHT / 2, BOUND_BOTTOM / 2, Direction.UP)
+        self.player2 = Player(self, PLAYER_ACC_MED, False, BOUND_RIGHT / 2 + 50, BOUND_BOTTOM / 2, Direction.UP)
         self.ball = Ball(*self.player1.position,8,8)
         self.ball.player = self.player1
         self.active_player = self.player1
@@ -112,14 +113,13 @@ class Game:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_b]:
                     self.active_player = self.player
-                if keys[pygame.K_SPACE] and self.rules.state == State.LINEOUT:
-                    #Throw the ball in
+                if keys[pygame.K_m] and self.rules.state == State.LINEOUT:
+                    # Throw the ball in
                     if self.ball.rect.centerx <= TOUCH_LEFT:
                         self.player2.pass_ball(1, 0)
                     if self.ball.rect.centerx >= TOUCH_RIGHT:
                         self.player2.pass_ball(-1, 0)
                     self.rules.state = State.INPLAY
-
 
     def draw(self):
         # Game loop draw

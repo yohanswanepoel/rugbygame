@@ -30,3 +30,10 @@ class State(Enum):
     RUCK = 7
     INJURY = 8
     HALF_TIME = 9
+
+
+class Direction:
+    UP = -1
+    DOWN = 1
+    LEFT = -1
+    RIGHT = 1

@@ -9,13 +9,14 @@ vec = pygame.math.Vector2
 class Player(pygame.sprite.Sprite):
     # Have to add fitness
 
-    def __init__(self, game, acceleration, active, x, y):
+    def __init__(self, game, acceleration, active, x, y, d):
         pygame.sprite.Sprite.__init__(self)
         self.has_ball = None
         # Shape is not quite square
         self.image = pygame.Surface((26,72))
         self.image.fill(YELLOW)
         self.game = game
+        self.play_direction = int(d)
         self.speed = acceleration
         self.rect = self.image.get_rect()
         self.position = vec(x, y)
@@ -26,6 +27,10 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.acceleration = vec(0, 0)
+        in_goal = self.check_in_goal()
+        has_ball = self.game.ball.player == self
+        own_goal = self.check_own_in_goal()
+
         if self.game.active_player == self and self.game.rules.state == State.INPLAY:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LEFT]:
@@ -36,22 +41,22 @@ class Player(pygame.sprite.Sprite):
                 self.acceleration.y += self.speed
             if keys[pygame.K_UP]:
                 self.acceleration.y -= self.speed
-            if keys[pygame.K_UP] and keys[pygame.K_SPACE]:
-                if self.game.ball.player == self:
-                    self.kick_ball(-1)
-            if keys[pygame.K_DOWN] and keys[pygame.K_SPACE]:
-                if self.game.ball.player == self:
-                    self.kick_ball(1)
-            if keys[pygame.K_RIGHT] and keys[pygame.K_SPACE]:
-                if self.game.ball.player == self:
-                    self.pass_ball(1, 2)
-            if keys[pygame.K_LEFT] and keys[pygame.K_SPACE]:
-                if self.game.ball.player == self:
-                    self.pass_ball(-1, 2)
-            if keys[pygame.K_SPACE]:
-                if self.game.ball.player == self:
-                    self.kick_ball(-1)
-
+            if has_ball:
+                if in_goal and keys[pygame.K_m]:
+                    # Score try
+                    print("Try")
+                if own_goal and keys[pygame.K_m]:
+                    # Score try
+                    print("Own Goal")
+                else:
+                    if keys[pygame.K_j]:
+                        self.kick_ball(self.play_direction)
+                    if keys[pygame.K_RIGHT] and keys[pygame.K_m]:
+                        self.pass_ball(Direction.RIGHT, self.play_direction * -2)
+                    elif keys[pygame.K_LEFT] and keys[pygame.K_m]:
+                        self.pass_ball(Direction.LEFT, self.play_direction * -2)
+                    elif keys[pygame.K_m]:
+                        self.pass_ball_back(-self.play_direction)
 
         # Adjust the acceleration by friction
         # The faster you go the more friction applies
@@ -63,6 +68,33 @@ class Player(pygame.sprite.Sprite):
 
         # Set new position
         self.rect.center = self.position
+
+    def check_in_goal(self):
+        if self.play_direction == Direction.UP:
+            if self.rect.top <= TRY_TOP:
+                return True
+        if self.play_direction == Direction.DOWN:
+            if self.rect.bottom >= TRY_BOTTOM:
+                return True
+        return False
+
+    def check_own_in_goal(self):
+        if self.play_direction == Direction.UP:
+            if self.rect.bottom >= TRY_BOTTOM:
+                return True
+        if self.play_direction == Direction.DOWN:
+            if self.rect.top <= TRY_TOP:
+                return True
+        return False
+
+    def pass_ball_back(self, fwd_back):
+        self.game.ball.player = None
+        self.game.active_player = None
+        self.game.ball.vel_height = 50
+        self.game.ball.rect.y += fwd_back * (self.rect.height / 2) + 5 * fwd_back
+        self.game.ball.position.y += fwd_back * (self.rect.height / 2) + 5 * fwd_back
+        self.game.ball.velocity.x = self.velocity.x * 5
+        self.game.ball.velocity.y = fwd_back * (PASS_STRONG * .7)
 
     def pass_ball(self, left_right, fwd_back):
         self.game.ball.player = None
@@ -132,26 +164,4 @@ class Ball(pygame.sprite.Sprite):
         self.rect.center = self.position
 
 
-class Field(pygame.sprite.Sprite):
 
-    def __init__(self, game):
-        pygame.sprite.Sprite.__init__(self)
-        # Draw Boundary
-        self.image = pygame.Surface((BOUND_RIGHT, BOUND_BOTTOM))
-        self.rect = self.image.get_rect()
-        self.image.fill(BLUE)
-        pygame.draw.rect(self.image, GRASS, [125, 125, TOUCH_WIDTH, DEAD_HEIGHT])
-        pygame.draw.rect(self.image, WHITE, [125, 125, TOUCH_WIDTH, DEAD_HEIGHT], 4)
-        # Middle Line
-        pygame.draw.line(self.image, WHITE, [125, BOUND_BOTTOM / 2], [125 + TOUCH_WIDTH, BOUND_BOTTOM / 2], 3)
-        # Touch Lines
-        pygame.draw.line(self.image, WHITE, [125, TRY_TOP], [125 + TOUCH_WIDTH, TRY_TOP], 3)
-        pygame.draw.line(self.image, WHITE, [125, TRY_BOTTOM], [125 + TOUCH_WIDTH, TRY_BOTTOM], 3)
-        # 25 M Lines Lines
-        # 10 M Lines
-        self.game = game
-        # self.draw_field()
-        # should not be center
-        self.rect.center = (BOUND_RIGHT / 2, BOUND_BOTTOM / 2)
-        self.position = self.rect.center
-        self.velocity = pygame.math.Vector2(0, 0)
